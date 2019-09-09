@@ -18,6 +18,7 @@ import {
   extractInlineStyle,
   getSelectedBlocksType
 } from "draftjs-utils";
+import draftToHtml from 'draftjs-to-html';
 import classNames from "classnames";
 import ModalHandler from "../event-handler/modals";
 import FocusHandler from "../event-handler/focus";
@@ -36,6 +37,7 @@ import defaultToolbar from "../config/defaultToolbar";
 import localeTranslations from "../i18n";
 import "./styles.css";
 import "../../css/Draft.css";
+import { HtmlEditor } from "../components/EditorHtml";
 
 export default class WysiwygEditor extends Component {
   static propTypes = {
@@ -99,7 +101,8 @@ export default class WysiwygEditor extends Component {
     this.state = {
       editorState: undefined,
       editorFocused: false,
-      toolbar
+      toolbar,
+      isHtmlEditorHidden: this.props.editorState && this.props.editorState.isHtmlEditorHidden
     };
     const wrapperId = props.wrapperId
       ? props.wrapperId
@@ -250,6 +253,26 @@ export default class WysiwygEditor extends Component {
       }
     }
   };
+
+  onChangeHtml = (editorState) => {
+    
+    if(this.props.onEditorStateChange){
+      editorState.isHtmlEditorHidden = this.state.isHtmlEditorHidden
+      this.props.onEditorStateChange(editorState)
+    }
+
+    if (!hasProperty(this.props, "editorState")) {
+      this.setState({ editorState }, this.afterChange(editorState));
+    } else {
+      this.afterChange(editorState);
+    }
+  }
+
+  closeHtmlEditor = () => {
+    this.setState({
+      isHtmlEditorHidden: true
+    })
+  }
 
   setWrapperReference: Function = (ref: Object): void => {
     this.wrapper = ref;
@@ -486,6 +509,8 @@ export default class WysiwygEditor extends Component {
     };
     const toolbarShow =
       editorFocused || this.focusHandler.isInputFocused() || !toolbarOnFocus;
+
+    var htmlContent = draftToHtml(convertToRaw(editorState.getCurrentContent()))
     return (
       <div
         id={this.wrapperId}
@@ -549,6 +574,14 @@ export default class WysiwygEditor extends Component {
             {...this.editorProps}
           />
         </div>
+        {!this.state.isHtmlEditorHidden && (
+          <HtmlEditor 
+            htmlContent={htmlContent}
+            onChange={this.onChangeHtml}
+            onClose={this.closeHtmlEditor}
+          />
+        )}
+        
       </div>
     );
   }
