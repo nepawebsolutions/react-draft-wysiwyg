@@ -6,42 +6,43 @@ import htmlToDraft from 'html-to-draftjs';
 
 export class HtmlEditor extends Component {
 
-    constructor({htmlContent, onChange, onClose, ...rest}) {
-        super({htmlContent, onChange, onClose, ...rest})
+    constructor({editorState, onChange, onClose, ...rest}) {
+        super({editorState, onChange, onClose, ...rest})
 
         this.onChange = onChange
         this.onClose = onClose
-        console.log(htmlContent)
-        //var html = this.getHtmlContent(editorState);
+        var html = this.getHtmlContent(editorState);
 
         this.state = {
-            htmlContent
+            htmlContent: html
         }
     }
 
     componentWillReceiveProps = (props) => {
-        const { htmlContent } = props
+        const { editorState } = props
+
+        var html = this.getHtmlContent(editorState);
 
         this.setState({
-            htmlContent
+            htmlContent: html
         })
     }
 
-    // getHtmlContent = (editorState) => {
-    //     var html = ''
+    getHtmlContent = (editorState) => {
+        var html = ''
 
-    //     if(editorState){
-    //         html = this.convertContentToHtml(editorState.getCurrentContent())
-    //     }
+        if(editorState){
+            html = this.convertContentToHtml(editorState.getCurrentContent())
+        }
 
-    //     return html;
-    // }
+        return html;
+    }
 
-    // convertContentToHtml = (content) => {
-    //     var rawContentState = convertToRaw(content);
+    convertContentToHtml = (content) => {
+        var rawContentState = convertToRaw(content);
 
-    //     return draftToHtml(rawContentState)
-    // }
+        return draftToHtml(rawContentState)
+    }
 
     changeHandler = (event) => {
         this.setState({

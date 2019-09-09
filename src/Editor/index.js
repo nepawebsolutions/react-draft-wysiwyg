@@ -18,7 +18,6 @@ import {
   extractInlineStyle,
   getSelectedBlocksType
 } from "draftjs-utils";
-import draftToHtml from 'draftjs-to-html';
 import classNames from "classnames";
 import ModalHandler from "../event-handler/modals";
 import FocusHandler from "../event-handler/focus";
@@ -510,7 +509,6 @@ export default class WysiwygEditor extends Component {
     const toolbarShow =
       editorFocused || this.focusHandler.isInputFocused() || !toolbarOnFocus;
 
-    var htmlContent = draftToHtml(convertToRaw(editorState.getCurrentContent()))
     return (
       <div
         id={this.wrapperId}
@@ -576,7 +574,7 @@ export default class WysiwygEditor extends Component {
         </div>
         {!this.state.isHtmlEditorHidden && (
           <HtmlEditor 
-            htmlContent={htmlContent}
+            editorState={editorState}
             onChange={this.onChangeHtml}
             onClose={this.closeHtmlEditor}
           />
