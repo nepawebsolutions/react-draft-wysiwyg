@@ -32,6 +32,7 @@ class ConvertToRawDraftContent extends Component {
       <span>HTML Content: <pre>{'<p>Hey this <strong>editor</strong> rocks 😀</p>'}</pre></span>
       <Editor
         editorState={editorState}
+        hasHtmlEditorOption={true}
         toolbarClassName="rdw-storybook-toolbar"
         wrapperClassName="rdw-storybook-wrapper"
         editorClassName="rdw-storybook-editor"

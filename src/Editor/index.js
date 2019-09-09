@@ -101,6 +101,7 @@ export default class WysiwygEditor extends Component {
       editorState: undefined,
       editorFocused: false,
       toolbar,
+      hasHtmlEditorOption: this.props.hasHtmlEditorOption,
       isHtmlEditorHidden: this.props.editorState && this.props.editorState.isHtmlEditorHidden
     };
     const wrapperId = props.wrapperId
@@ -544,6 +545,7 @@ export default class WysiwygEditor extends Component {
             )}
         </div>  
         )}
+        {this.state.hasHtmlEditorOption && (<button>Edit as HTML</button>)}
         <div
           ref={this.setWrapperReference}
           className={classNames(editorClassName, "rdw-editor-main")}
