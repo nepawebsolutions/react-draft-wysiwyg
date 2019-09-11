@@ -46,48 +46,53 @@ $ npm install --save react-draft-wysiwyg-johgeocoder draft-js
 ## Getting started
 Editor can be used as simple React Component:
 ```js
-import { EditorState, ContentState } from 'draft-js';
+import React, { useState, useEffect } from 'react';
+import { EditorState, ContentState, convertToRaw } from 'draft-js';
 import htmlToDraft from 'html-to-draftjs';
+import draftToHtml from 'draftjs-to-html';
 import { Editor } from 'react-draft-wysiwyg-johgeocoder';
-import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
-class MyApp extends Component {
+import 'react-draft-wysiwyg-johgeocoder/dist/react-draft-wysiwyg.css';
 
-  constructor(props) {
-    super(props);
+const App = () => {
+
+  const [editorState, setEditorState] = useState(null)
+
+  useEffect(() => {
     const html = '<p>-- -- <br><strong>Lunes Test</strong>  |  Sales Executive<br>+1 (888) 888-8888</p><img src="https://s3.amazonaws.com/exceedbot-webchat/monday.gif" alt="undefined" style="float:left;height: auto;width: auto"/><p></p>';
     const contentBlock = htmlToDraft(html);
     if (contentBlock) {
       const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
-      const editorState = EditorState.createWithContent(contentState);
-      this.state = {
-        editorState,
-      };
+      const newEditorState = EditorState.createWithContent(contentState);
+      setEditorState(newEditorState)
     }
+  }, []) //run once on initial render
+  
+  useEffect(() => {
+    if(editorState){
+      var html = draftToHtml(convertToRaw(editorState.getCurrentContent()))
+      console.log(html)
+    }
+  }) //Run every state change
+
+  var onEditorStateChange = (newEditorState) => {
+    setEditorState(newEditorState)
   }
 
-  onEditorStateChange: Function = (editorState) => {
-    this.setState({
-      editorState,
-    });
-  };
-
-  render() {
-    const { editorState } = this.state;
-    return (<div className="rdw-storybook-root">
-      <span>HTML Content: <pre>{'<p>Hey this <strong>editor</strong> rocks 😀</p>'}</pre></span>
-      <Editor
+  return <>
+  <div style={{width: '600px', margin: '0 auto', border:'1px solid black'}}>
+    <Editor
         editorState={editorState}
         hasHtmlEditorOption={true}
-        toolbarClassName="rdw-storybook-toolbar"
-        wrapperClassName="rdw-storybook-wrapper"
-        editorClassName="rdw-storybook-editor"
-        onEditorStateChange={this.onEditorStateChange}
+        toolbarClassName="toolbarClassName"
+        wrapperClassName="wrapperClassName"
+        editorClassName="editorClassName"
+        onEditorStateChange={(newEditorState) => onEditorStateChange(newEditorState)}
       />
-    </div>);
-  }
+  </div>
+  </>
 }
 
-export default MyApp;
+export default App;
 ```
 
 ## Docs
