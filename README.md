@@ -40,7 +40,7 @@ A Wysiwyg editor built using ReactJS and DraftJS libraries.
 The package can be installed from npm `react-draft-wysiwyg-johgeocoder`
 
 ```
-$ npm install --save react-draft-wysiwyg-johgeocoder draft-js
+$ npm install --save react-draft-wysiwyg-johgeocoder draft-js draftjs-to-html html-to-draftjs
 ```
 
 ## Getting started
