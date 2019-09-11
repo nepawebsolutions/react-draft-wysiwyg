@@ -37,10 +37,10 @@ A Wysiwyg editor built using ReactJS and DraftJS libraries.
 - Support for internationalization.
 
 ## Installing
-The package can be installed from npm `react-draft-wysiwyg`
+The package can be installed from npm `react-draft-wysiwyg-johgeocoder`
 
 ```
-$ npm install --save react-draft-wysiwyg draft-js
+$ npm install --save react-draft-wysiwyg-johgeocoder draft-js
 ```
 
 ## Getting started
