@@ -5,6 +5,7 @@ import PropTypes from "prop-types";
 import {
   Editor,
   EditorState,
+  ContentState,
   RichUtils,
   convertToRaw,
   convertFromRaw,
@@ -37,6 +38,8 @@ import localeTranslations from "../i18n";
 import "./styles.css";
 import "../../css/Draft.css";
 import { HtmlEditor } from "../components/EditorHtml";
+import draftToHtml from 'draftjs-to-html';
+import htmlToDraft from 'html-to-draftjs';
 
 export default class WysiwygEditor extends Component {
   static propTypes = {
@@ -102,7 +105,7 @@ export default class WysiwygEditor extends Component {
       editorFocused: false,
       toolbar,
       hasHtmlEditorOption: this.props.hasHtmlEditorOption,
-      isHtmlEditorHidden: this.props.editorState && this.props.editorState.isHtmlEditorHidden
+      isHtmlEditorVisible: this.props.editorState && this.props.editorState.isHtmlEditorVisible
     };
     const wrapperId = props.wrapperId
       ? props.wrapperId
@@ -253,26 +256,6 @@ export default class WysiwygEditor extends Component {
       }
     }
   };
-
-  onChangeHtml = (editorState) => {
-    
-    if(this.props.onEditorStateChange){
-      editorState.isHtmlEditorHidden = this.state.isHtmlEditorHidden
-      this.props.onEditorStateChange(editorState)
-    }
-
-    if (!hasProperty(this.props, "editorState")) {
-      this.setState({ editorState }, this.afterChange(editorState));
-    } else {
-      this.afterChange(editorState);
-    }
-  }
-
-  closeHtmlEditor = () => {
-    this.setState({
-      isHtmlEditorHidden: true
-    })
-  }
 
   setWrapperReference: Function = (ref: Object): void => {
     this.wrapper = ref;
@@ -427,7 +410,9 @@ export default class WysiwygEditor extends Component {
 
   focusEditor: Function = (): void => {
     setTimeout(() => {
-      this.editor.focus();
+      if(this.editor){
+        this.editor.focus();
+      }
     });
   };
 
@@ -479,6 +464,63 @@ export default class WysiwygEditor extends Component {
       event.preventDefault();
     }
   };
+
+  showHtmlEditor = (isShow) => {
+
+    if(isShow){
+      var html = this.getHtmlContent(this.state.editorState);
+
+      this.setState({
+        isHtmlEditorVisible: isShow,
+        htmlEditorContent: html
+      })
+    } else{
+      this.setState({
+        isHtmlEditorVisible: isShow
+      })
+    }
+  }
+
+  getHtmlContent = (editorState) => {
+    var html = ''
+
+    if(editorState){
+        html = this.convertContentToHtml(editorState.getCurrentContent())
+    }
+
+    return html;
+  }
+
+  convertContentToHtml = (content) => {
+      var rawContentState = convertToRaw(content);
+      return draftToHtml(rawContentState)
+  }
+
+  applyHtmlChanges = () => {
+
+    const contentBlock = htmlToDraft(this.state.htmlEditorContent);
+    const contentState = ContentState.createFromBlockArray(contentBlock.contentBlocks);
+    const newEditorState = EditorState.createWithContent(contentState);
+    
+    if(this.props.onEditorStateChange){
+      newEditorState.isHtmlEditorVisible = this.state.isHtmlEditorVisible
+      this.props.onEditorStateChange(newEditorState)
+    }
+
+    if (!hasProperty(this.props, "editorState")) {
+      this.setState({ editorState: newEditorState }, this.afterChange(newEditorState));
+    } else {
+      this.afterChange(newEditorState);
+    }
+
+    this.showHtmlEditor(false)
+  }
+
+  htmlChangeHandler = (newHtml) => {
+    this.setState({
+      htmlEditorContent: newHtml
+    })
+  }
 
   render() {
     const { editorState, editorFocused, toolbar } = this.state;
@@ -545,7 +587,20 @@ export default class WysiwygEditor extends Component {
             )}
         </div>  
         )}
-        {this.state.hasHtmlEditorOption && (<button>Edit as HTML</button>)}
+        
+        {this.state.hasHtmlEditorOption && (
+            this.state.isHtmlEditorVisible ? (
+              <div>
+                <button onClick={() => this.applyHtmlChanges()}>Apply HTML Changes</button>
+                <button onClick={() => this.showHtmlEditor(false)}>Close HTML Editor</button>
+              </div>
+            ) : (
+              <div>
+                <button onClick={() => {this.showHtmlEditor(true)}}>Edit as HTML</button>
+              </div>
+            )
+        )}
+
         <div
           ref={this.setWrapperReference}
           className={classNames(editorClassName, "rdw-editor-main")}
@@ -556,31 +611,36 @@ export default class WysiwygEditor extends Component {
           onKeyDown={KeyDownHandler.onKeyDown}
           onMouseDown={this.onEditorMouseDown}
         >
-          <Editor
-            ref={this.setEditorReference}
-            onTab={this.onTab}
-            onUpArrow={this.onUpDownArrow}
-            onDownArrow={this.onUpDownArrow}
-            editorState={editorState}
-            onChange={this.onChange}
-            blockStyleFn={blockStyleFn}
-            customStyleMap={this.getStyleMap(this.props)}
-            handleReturn={this.handleReturn}
-            handlePastedText={this.handlePastedText}
-            blockRendererFn={this.blockRendererFn}
-            handleKeyCommand={this.handleKeyCommand}
-            ariaLabel={ariaLabel || "rdw-editor"}
-            blockRenderMap={blockRenderMap}
-            {...this.editorProps}
-          />
+          {this.state.hasHtmlEditorOption && this.state.isHtmlEditorVisible ? (
+            <div>
+              <HtmlEditor 
+                htmlEditorContent={this.state.htmlEditorContent}
+                onChange={(newHtml => this.htmlChangeHandler(newHtml))}
+              />
+            </div>
+          ) : (
+            <div>
+              <Editor
+                ref={this.setEditorReference}
+                onTab={this.onTab}
+                onUpArrow={this.onUpDownArrow}
+                onDownArrow={this.onUpDownArrow}
+                editorState={editorState}
+                onChange={this.onChange}
+                blockStyleFn={blockStyleFn}
+                customStyleMap={this.getStyleMap(this.props)}
+                handleReturn={this.handleReturn}
+                handlePastedText={this.handlePastedText}
+                blockRendererFn={this.blockRendererFn}
+                handleKeyCommand={this.handleKeyCommand}
+                ariaLabel={ariaLabel || "rdw-editor"}
+                blockRenderMap={blockRenderMap}
+                {...this.editorProps}
+              />
+            </div>
+          )}
         </div>
-        {!this.state.isHtmlEditorHidden && (
-          <HtmlEditor 
-            editorState={editorState}
-            onChange={this.onChangeHtml}
-            onClose={this.closeHtmlEditor}
-          />
-        )}
+
         
       </div>
     );
