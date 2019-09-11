@@ -27,7 +27,7 @@ export class HtmlEditor extends Component {
     render() {
         return <div>
             <textarea 
-                style={{marginTop: '0', border: 'none', height: '200px', resize: 'vertical'}}
+                style={{marginTop: '0', border: 'none', width: '100%', height: '200px', resize: 'vertical'}}
                 className="rdw-storybook-textarea"
                 value={this.state.htmlContent}
                 onChange={(event) => this.changeHandler(event)}
